@@ -49,7 +49,7 @@ void USimpleInteractionCharacterComponent::TraceAndFocusOnInteractableActor()
 	FVector End = Start + (CameraForwardVector * TraceDistance) + TraceEndOffset;
 	
 	// Draw debug line
-	if (bDebug) DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.f, 0, 1.f);
+	if (bDebug) DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.f, 0, 0.6);
 
 	// Trace using a sphere
 	FHitResult HitResult;
@@ -69,7 +69,7 @@ void USimpleInteractionCharacterComponent::TraceAndFocusOnInteractableActor()
 	if (bHit)
 	{
 		// Draw debug sphere
-		if (bDebug) DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, TraceSphereRadius, 8, FColor::Green, false, 1.f, 0, 0.5);
+		if (bDebug) DrawDebugSphere(GetWorld(), HitResult.ImpactPoint, TraceSphereRadius, 8, FColor::Green, false, 1.f, 0, 0.6);
 		
 		AActor* HitActor = HitResult.GetActor();
 		
@@ -86,7 +86,7 @@ void USimpleInteractionCharacterComponent::TraceAndFocusOnInteractableActor()
 	else
 	{
 		// Draw debug sphere
-		if (bDebug) DrawDebugSphere(GetWorld(), End, TraceSphereRadius, 8, FColor::Red, false, 1.f, 0, 0.5);
+		if (bDebug) DrawDebugSphere(GetWorld(), End, TraceSphereRadius, 8, FColor::Red, false, 1.f, 0, 0.1);
 		
 		UnfocusCurrentInteractableActor();
 	}
