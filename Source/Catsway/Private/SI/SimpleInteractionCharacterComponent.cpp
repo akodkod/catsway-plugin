@@ -164,8 +164,25 @@ bool USimpleInteractionCharacterComponent::IsActorTraceable(AActor* Actor, FVect
 
 	if (bHit)
 	{
-		const bool bHitActor = HitResult.GetActor() == Actor;
-		if (bDebug) DrawDebugLine(GetWorld(), Start, End, bHitActor ? FColor::Green : FColor::Red, false, GetWorld()->GetDeltaSeconds() * 2.0f);
+		bool bHitActor = HitResult.GetActor() == Actor;
+
+		// Check if we hit the parent actor
+		// TODO: Should I limit the hierarchy depth?
+		if (!bHitActor)
+		{
+			AActor* ParentActor = Actor->GetAttachParentActor();
+			while (ParentActor)
+			{
+				bHitActor = HitResult.GetActor() == ParentActor;
+				if (bHitActor) break;
+				ParentActor = ParentActor->GetAttachParentActor();
+			}
+		}
+		
+		if (bDebug) 
+		{
+		    DrawDebugLine(GetWorld(), Start, End, bHitActor ? FColor::Green : FColor::Red, false, GetWorld()->GetDeltaSeconds() * 2.0f);
+		}
 		
 		return bHitActor;
 	}
