@@ -6,7 +6,6 @@
 #include "Components/ActorComponent.h"
 #include "SimpleInteractionCharacterComponent.generated.h"
 
-
 UCLASS(ClassGroup=(Custom), meta=(BlueprintSpawnableComponent))
 class CATSWAY_API USimpleInteractionCharacterComponent : public UActorComponent
 {
@@ -17,22 +16,13 @@ public:
 	USimpleInteractionCharacterComponent();
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	float TraceSphereRadius = 100.f;
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	float TraceDistance = 250.f;
+	float InteractionDistance = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	float TraceDistanceOffset = 250.f;
+	float NearbyDistance = 200.f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	FVector TraceStartOffset = FVector(0.f, 0.f, 20.f);
-	
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	FVector TraceEndOffset = FVector(0.f, 0.f, 50.f);
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
-	TEnumAsByte<ECollisionChannel> TraceChannel = ECollisionChannel::ECC_Visibility;
+	FVector TraceCenterOffset = FVector(0.f, 0.f, 0.f);
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
 	bool bDebug = false;
@@ -41,11 +31,23 @@ protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	// Store the interactable object that is currently being focused
-	AActor* FocusedInteractableActor = nullptr;
+	UPROPERTY(BlueprintReadOnly)
+	AActor* FocusedActor = nullptr;
 
-	void FocusInteractableActor(AActor* Interactable);
-	void UnfocusCurrentInteractableActor();
+	UPROPERTY(BlueprintReadOnly)
+	TArray<AActor*> NearbyActors;
+
+	void FocusActor(AActor* Actor);
+	void UnfocusActor(AActor* Actor);
+
+	void MarkActorAsNearby(AActor* Actor);
+	void UnmarkActorAsNearby(AActor* Actor);
+	void UnmarkActorsAsNearbyThatAreNotFromList(TArray<AActor*> Actors);
+
+	bool IsActorVisibleToCharacter(AActor* Actor);
+	bool IsActorVisibleToCamera(AActor* Actor);
+
+	bool IsActorTraceable(AActor* Actor, FVector Start, AActor* IgnoreActor);
 
 public:
 	// Called every frame
@@ -56,7 +58,10 @@ public:
 	
 	UFUNCTION(BlueprintCallable, Category = "Simple Interaction")
 	void InteractWithFocusedActor();
-	
+
 	UFUNCTION(BlueprintCallable, Category = "Simple Interaction")
-	AActor* GetFocusedInteractableActor() const { return FocusedInteractableActor; }
+	void UnfocusCurrentActor();
+
+	UFUNCTION(BlueprintCallable, Category = "Simple Interaction")
+	void UnmarkAllNearbyActors();
 };
