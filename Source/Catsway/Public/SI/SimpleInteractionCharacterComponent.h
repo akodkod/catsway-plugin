@@ -24,6 +24,10 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
 	FVector TraceCenterOffset = FVector(0.f, 0.f, 0.f);
 
+	/* Run trace every N frames. Setting this to value lower or equal to 1 will run trace every frame. */
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction", meta = (ClampMin = 0, ClampMax = 60))
+	int RunTraceEveryNFrame = 1;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Interaction")
 	bool bDebug = false;
 

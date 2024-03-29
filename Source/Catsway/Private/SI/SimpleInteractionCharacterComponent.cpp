@@ -37,6 +37,9 @@ void USimpleInteractionCharacterComponent::TickComponent(float DeltaTime, ELevel
 
 void USimpleInteractionCharacterComponent::TraceAndFocusOnInteractableActor()
 {
+	// Run trace every N frames
+	if (RunTraceEveryNFrame > 1 && GFrameCounter % RunTraceEveryNFrame != 0) return;
+	
 	APawn* OwningPawn = GetOwner<APawn>();
 	if (!OwningPawn) return;
 	
