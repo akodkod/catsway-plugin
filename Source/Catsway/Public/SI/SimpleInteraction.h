@@ -8,37 +8,34 @@
 
 // This class does not need to be modified.
 UINTERFACE()
-class USimpleInteraction : public UInterface
-{
-	GENERATED_BODY()
+class USimpleInteraction : public UInterface {
+  GENERATED_BODY()
 };
 
 /**
- * 
+ *
  */
-class CATSWAY_API ISimpleInteraction
-{
-	GENERATED_BODY()
+class CATSWAY_API ISimpleInteraction {
+  GENERATED_BODY()
 
-	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
+  // Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  void PlayerEntersNearbyArea();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	void PlayerEntersNearbyArea();
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  void PlayerLeavesNearbyArea();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	void PlayerLeavesNearbyArea();
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  void PlayerFocuses();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	void PlayerFocuses();
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  void PlayerUnfocuses();
 
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	void PlayerUnfocuses();
+  // Create CanPlayerInteract with default return true
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  bool CanPlayerInteract();
 
-	// Create CanPlayerInteract with default return true
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	bool CanPlayerInteract();
-
-	UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
-	void PlayerInteracts();
+  UFUNCTION(BlueprintNativeEvent, BlueprintCallable, Category = "Simple Interaction")
+  void PlayerInteracts();
 };

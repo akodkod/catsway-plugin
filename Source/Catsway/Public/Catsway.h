@@ -5,11 +5,9 @@
 #include "CoreMinimal.h"
 #include "Modules/ModuleManager.h"
 
-class FCatswayModule : public IModuleInterface
-{
+class FCatswayModule final : public IModuleInterface {
 public:
-
-	/** IModuleInterface implementation */
-	virtual void StartupModule() override;
-	virtual void ShutdownModule() override;
+  /** IModuleInterface implementation */
+  virtual void StartupModule() override;
+  virtual void ShutdownModule() override;
 };
