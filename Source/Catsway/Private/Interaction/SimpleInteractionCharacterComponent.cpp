@@ -85,6 +85,9 @@ void USimpleInteractionCharacterComponent::TraceAndFocusOnInteractableActor() {
     // Skip if not implements the USimpleInteraction interface
     if (!Actor->GetClass()->ImplementsInterface(USimpleInteraction::StaticClass())) continue;
 
+    // Skip if actor can not interact
+    if (!ISimpleInteraction::Execute_CanPlayerInteract(Actor)) continue;
+
     // Skip if not visible to camera
     if (!IsActorVisibleToCamera(Actor)) continue;
 
