@@ -4,7 +4,9 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "GameplayTagContainer.h"
 #include "SimpleInventoryItem.h"
+
 #include "SimpleInventoryComponent.generated.h"
 
 // Create a struct for inventory item
@@ -24,6 +26,18 @@ struct FInventoryItem {
   }
 };
 
+// Create a struct to limit capacity of inventory by gameplay tag
+USTRUCT(BlueprintType)
+struct FInventoryCapacity {
+  GENERATED_BODY()
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  FGameplayTag Tag;
+
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ClampMin = 0))
+  int32 Capacity;
+};
+
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
 class CATSWAY_API USimpleInventoryComponent : public UActorComponent {
   GENERATED_BODY()
@@ -35,6 +49,10 @@ public:
   // Inventory items
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
   TArray<FInventoryItem> Items;
+
+  // Inventory capacity
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
+  TArray<FInventoryCapacity> Capacities;
 
 protected:
   // Called when the game starts
@@ -61,4 +79,16 @@ public:
 
   UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
   int32 GetItemQuantity(USimpleInventoryItem* Item) const;
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  TArray<USimpleInventoryItem*> GetItemsByTag(FGameplayTag Tag) const;
+  
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  bool CanAddItem(USimpleInventoryItem* Item) const;
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  bool CanAddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) const;
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  int32 GetRemainingTagCapacity(USimpleInventoryItem* Item) const;
 };

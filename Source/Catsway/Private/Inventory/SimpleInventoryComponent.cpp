@@ -27,6 +27,9 @@ void USimpleInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 }
 
 void USimpleInventoryComponent::AddItem(USimpleInventoryItem* Item) {
+  if (Item == nullptr) throw std::invalid_argument("Item is null");
+  if (!CanAddItem(Item)) throw std::invalid_argument("Cannot add item");
+  
   FInventoryItem NewInventoryItem;
   NewInventoryItem.Item = Item;
   NewInventoryItem.Quantity = 1;
@@ -34,14 +37,10 @@ void USimpleInventoryComponent::AddItem(USimpleInventoryItem* Item) {
 }
 
 void USimpleInventoryComponent::AddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
-  if (Item == nullptr || Quantity <= 0) {
-    throw std::invalid_argument("Item is null or quantity is less than or equal to 0");
-  }
-  
-  if (!Item->bStackable && Quantity > 1) {
-    throw std::invalid_argument("Item is not stackable");
-  }
-
+  if (Item == nullptr) throw std::invalid_argument("Item is null");
+  if (Quantity <= 0) throw std::invalid_argument("Quantity is less than or equal to 0");
+  if (!CanAddItemQuantity(Item, Quantity)) throw std::invalid_argument("Cannot add item quantity");
+ 
   int32 RemainingQuantity = Quantity;
 
   while (RemainingQuantity > 0) {
@@ -71,9 +70,7 @@ void USimpleInventoryComponent::AddItemQuantity(USimpleInventoryItem* Item, int3
 }
 
 void USimpleInventoryComponent::RemoveItem(USimpleInventoryItem* Item) {
-  if (Item == nullptr) {
-    throw std::invalid_argument("Item is null");
-  }
+  if (Item == nullptr) throw std::invalid_argument("Item is null");
 
   for (auto i = 0; i < Items.Num(); ++i) {
     if (Items[i].Item == Item) {
@@ -84,14 +81,10 @@ void USimpleInventoryComponent::RemoveItem(USimpleInventoryItem* Item) {
 }
 
 void USimpleInventoryComponent::RemoveItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
-  if (Item == nullptr || Quantity <= 0) {
-    throw std::invalid_argument("Item is null or quantity is less than or equal to 0");
-  }
-
-  if (!Item->bStackable) {
-    throw std::invalid_argument("Item is not stackable");
-  }
-
+  if (Item == nullptr) throw std::invalid_argument("Item is null");
+  if (Quantity <= 0) throw std::invalid_argument("Quantity is less than or equal to 0");
+  if (!Item->bStackable) throw std::invalid_argument("Item is not stackable");
+ 
   int32 RemainingQuantity = Quantity;
   TArray<int32> IndexesToRemove;
 
@@ -125,11 +118,60 @@ bool USimpleInventoryComponent::HasItem(USimpleInventoryItem* Item) const {
 }
 
 int32 USimpleInventoryComponent::GetItemQuantity(USimpleInventoryItem* Item) const {
+  int32 Quantity = 0;
+
   for (const FInventoryItem& InventoryItem: Items) {
     if (InventoryItem.Item == Item) {
-      return InventoryItem.Quantity;
+      Quantity += InventoryItem.Quantity;
     }
   }
 
-  return 0;
+  return Quantity;
+}
+
+TArray<USimpleInventoryItem*> USimpleInventoryComponent::GetItemsByTag(FGameplayTag Tag) const {
+  TArray<USimpleInventoryItem*> ItemsByTag;
+
+  for (const FInventoryItem& InventoryItem: Items) {
+    if (InventoryItem.Item->Tag.MatchesTagExact(Tag)) {
+      ItemsByTag.Add(InventoryItem.Item);
+    }
+  }
+
+  return ItemsByTag;
+}
+
+bool USimpleInventoryComponent::CanAddItem(USimpleInventoryItem* Item) const {
+  return CanAddItemQuantity(Item, 1);
+}
+
+bool USimpleInventoryComponent::CanAddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) const {
+  return GetRemainingTagCapacity(Item) >= Quantity;
+}
+
+int32 USimpleInventoryComponent::GetRemainingTagCapacity(USimpleInventoryItem* Item) const {
+  if (Item == nullptr) throw std::invalid_argument("Item is null");
+  if (Capacities.Num() == 0) return INT_MAX;
+
+  auto TagCapacity = 0;
+
+  if (Item->Tag.IsValid()) {
+    for (const FInventoryCapacity& Capacity: Capacities) {
+      if (Capacity.Tag.MatchesTagExact(Item->Tag)) {
+        TagCapacity = Capacity.Capacity;
+        break;
+      }
+    }
+  }
+  else {
+    // Find the first capacity that does not have a tag
+    for (const FInventoryCapacity& Capacity: Capacities) {
+      if (!Capacity.Tag.IsValid()) {
+        TagCapacity = Capacity.Capacity;
+        break;
+      }
+    }
+  }
+
+  return TagCapacity - GetItemsByTag(Item->Tag).Num();
 }

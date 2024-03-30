@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "Engine/DataAsset.h"
+#include "GameplayTagContainer.h"
+
 #include "SimpleInventoryItem.generated.h"
 
 /**
@@ -27,6 +29,9 @@ public:
   // Set value to 0 to make it infinite
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory", Meta = (EditCondition = "bStackable"))
   int32 MaxStackSize = 1;
+
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
+  FGameplayTag Tag;
   
   // Implement == operator for this class
   bool operator==(const USimpleInventoryItem& Other) const {
