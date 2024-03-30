@@ -4,27 +4,24 @@
 
 #include "Components/ActorComponent.h"
 #include "CoreMinimal.h"
+#include "SimpleInventoryItem.h"
 #include "SimpleInventoryComponent.generated.h"
-
-// Create a struct for item data table
-USTRUCT(BlueprintType)
-struct FInventoryItemDataTable : public FTableRowBase {
-  GENERATED_BODY()
-
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  FString Name;
-
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  FString Description;
-};
 
 // Create a struct for inventory item
 USTRUCT(BlueprintType)
 struct FInventoryItem {
   GENERATED_BODY()
+  
+  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  USimpleInventoryItem* Item;
 
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
-  FName RowName;
+  int32 Quantity;
+
+  // Implement == operator for this struct
+  bool operator==(const FInventoryItem& Other) const {
+    return Item == Other.Item;
+  }
 };
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent))
@@ -39,9 +36,9 @@ public:
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
   TArray<FInventoryItem> Items;
 
-  // Items data table
-  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
-  UDataTable* ItemsDataTable;
+  // Inventory capacity
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Inventory")
+  int32 Capacity = 10;
 
 protected:
   // Called when the game starts
@@ -51,19 +48,24 @@ public:
   // Called every frame
   virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-  // Add item to inventory
   UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
-  void AddItem(FName RowName);
+  void AddItem(USimpleInventoryItem* Item);
 
-  // Remove item from inventory
   UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
-  void RemoveItem(FName RowName);
-  
-  // Check if item is in inventory
-  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
-  bool HasItem(FName RowName);
+  void AddItemQuantity(USimpleInventoryItem* Item, int32 Quantity);
 
-  // Item exists in data table
   UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
-  bool ItemExistsInDataTable(FName RowName);
+  void RemoveItem(USimpleInventoryItem* Item);
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  void RemoveItemQuantity(USimpleInventoryItem* Item, int32 Quantity);
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  bool HasItem(USimpleInventoryItem* Item) const;
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  int32 GetItemQuantity(USimpleInventoryItem* Item) const;
+
+  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
+  void SetItemQuantity(USimpleInventoryItem* Item, int32 Quantity);
 };

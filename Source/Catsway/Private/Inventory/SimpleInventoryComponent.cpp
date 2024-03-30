@@ -26,40 +26,80 @@ void USimpleInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
   // ...
 }
 
-void USimpleInventoryComponent::AddItem(FName RowName) {
-  GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString::Printf(TEXT("Adding item with system name %s"), *RowName.ToString()));
-  
-  if (!ItemExistsInDataTable(RowName)) {
-    GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::Printf(TEXT("Item with system name %s does not exist in data table"), *RowName.ToString()));
-    return;
-  }
-
-  FInventoryItem Item;
-  Item.RowName = RowName;
-  Items.Add(Item);
+void USimpleInventoryComponent::AddItem(USimpleInventoryItem* Item) {
+  AddItemQuantity(Item, 1);
 }
 
-void USimpleInventoryComponent::RemoveItem(FName RowName) {
-  for (int i = 0; i < Items.Num(); i++) {
-    if (Items[i].RowName == RowName) {
-      Items.RemoveAt(i);
+void USimpleInventoryComponent::AddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
+  if (Item == nullptr || Quantity <= 0) return;
+
+  for (FInventoryItem& InventoryItem: Items) {
+    if (InventoryItem.Item == Item) {
+      InventoryItem.Quantity += Quantity;
+      return;
+    }
+  }
+
+  FInventoryItem NewInventoryItem;
+  NewInventoryItem.Item = Item;
+  NewInventoryItem.Quantity = Quantity;
+  Items.Add(NewInventoryItem);
+}
+
+void USimpleInventoryComponent::RemoveItem(USimpleInventoryItem* Item) {
+  RemoveItemQuantity(Item, 1);
+}
+
+void USimpleInventoryComponent::RemoveItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
+  if (Item == nullptr || Quantity <= 0) return;
+
+  for (int32 i = 0; i < Items.Num(); ++i) {
+    FInventoryItem& InventoryItem = Items[i];
+    
+    if (InventoryItem.Item == Item) {
+      InventoryItem.Quantity -= Quantity;
+      
+      if (InventoryItem.Quantity <= 0) {
+        Items.RemoveAt(i);
+      }
+      
       return;
     }
   }
 }
 
-bool USimpleInventoryComponent::HasItem(FName RowName) {
-  for (int i = 0; i < Items.Num(); i++) {
-    if (Items[i].RowName == RowName) {
+bool USimpleInventoryComponent::HasItem(USimpleInventoryItem* Item) const {
+  for (const FInventoryItem& InventoryItem: Items) {
+    if (InventoryItem.Item == Item) {
       return true;
     }
   }
-  
+
   return false;
 }
 
-bool USimpleInventoryComponent::ItemExistsInDataTable(FName RowName) {
-  return ItemsDataTable->FindRow<FInventoryItemDataTable>(RowName, TEXT("")) != nullptr;
+int32 USimpleInventoryComponent::GetItemQuantity(USimpleInventoryItem* Item) const {
+  for (const FInventoryItem& InventoryItem: Items) {
+    if (InventoryItem.Item == Item) {
+      return InventoryItem.Quantity;
+    }
+  }
+
+  return 0;
 }
 
+void USimpleInventoryComponent::SetItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
+  if (Item == nullptr || Quantity < 0) return;
 
+  for (FInventoryItem& InventoryItem: Items) {
+    if (InventoryItem.Item == Item) {
+      InventoryItem.Quantity = Quantity;
+      return;
+    }
+  }
+
+  FInventoryItem NewInventoryItem;
+  NewInventoryItem.Item = Item;
+  NewInventoryItem.Quantity = Quantity;
+  Items.Add(NewInventoryItem);
+}
