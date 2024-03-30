@@ -14,8 +14,8 @@ struct FInventoryItem {
   
   UPROPERTY(EditAnywhere, BlueprintReadWrite)
   USimpleInventoryItem* Item;
-
-  UPROPERTY(EditAnywhere, BlueprintReadWrite)
+  
+  UPROPERTY(EditAnywhere, BlueprintReadWrite, Meta = (ClampMin = 1))
   int32 Quantity;
 
   // Implement == operator for this struct
