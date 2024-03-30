@@ -21,6 +21,13 @@ public:
   UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
   FString Description;
   
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory", Meta = (InlineEditConditionToggle))
+  bool bStackable = false;
+
+  // Set value to 0 to make it infinite
+  UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Simple Inventory", Meta = (EditCondition = "bStackable"))
+  int32 MaxStackSize = 1;
+  
   // Implement == operator for this class
   bool operator==(const USimpleInventoryItem& Other) const {
     return this == &Other;

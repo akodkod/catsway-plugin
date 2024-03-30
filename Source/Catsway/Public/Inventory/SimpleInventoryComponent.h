@@ -36,10 +36,6 @@ public:
   UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = "Simple Inventory")
   TArray<FInventoryItem> Items;
 
-  // Inventory capacity
-  UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Simple Inventory")
-  int32 Capacity = 10;
-
 protected:
   // Called when the game starts
   virtual void BeginPlay() override;
@@ -65,7 +61,4 @@ public:
 
   UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
   int32 GetItemQuantity(USimpleInventoryItem* Item) const;
-
-  UFUNCTION(BlueprintCallable, Category = "Simple Inventory")
-  void SetItemQuantity(USimpleInventoryItem* Item, int32 Quantity);
 };

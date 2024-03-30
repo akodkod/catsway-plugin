@@ -27,44 +27,90 @@ void USimpleInventoryComponent::TickComponent(float DeltaTime, ELevelTick TickTy
 }
 
 void USimpleInventoryComponent::AddItem(USimpleInventoryItem* Item) {
-  AddItemQuantity(Item, 1);
-}
-
-void USimpleInventoryComponent::AddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
-  if (Item == nullptr || Quantity <= 0) return;
-
-  for (FInventoryItem& InventoryItem: Items) {
-    if (InventoryItem.Item == Item) {
-      InventoryItem.Quantity += Quantity;
-      return;
-    }
-  }
-
   FInventoryItem NewInventoryItem;
   NewInventoryItem.Item = Item;
-  NewInventoryItem.Quantity = Quantity;
+  NewInventoryItem.Quantity = 1;
   Items.Add(NewInventoryItem);
 }
 
+void USimpleInventoryComponent::AddItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
+  if (Item == nullptr || Quantity <= 0) {
+    throw std::invalid_argument("Item is null or quantity is less than or equal to 0");
+  }
+  
+  if (!Item->bStackable && Quantity > 1) {
+    throw std::invalid_argument("Item is not stackable");
+  }
+
+  int32 RemainingQuantity = Quantity;
+
+  while (RemainingQuantity > 0) {
+    for (FInventoryItem& InventoryItem: Items) {
+      if (InventoryItem.Item == Item) {
+        const int32 QuantityToAdd = Item->MaxStackSize == 0
+          ? RemainingQuantity
+          : FMath::Min(
+            RemainingQuantity,
+            Item->MaxStackSize - InventoryItem.Quantity
+          );
+        
+        InventoryItem.Quantity += QuantityToAdd;
+        RemainingQuantity -= QuantityToAdd;
+      }
+    }
+
+    if (RemainingQuantity > 0) {
+      FInventoryItem NewInventoryItem;
+      NewInventoryItem.Item = Item;
+      NewInventoryItem.Quantity = FMath::Min(RemainingQuantity, Item->MaxStackSize);
+      Items.Add(NewInventoryItem);
+      
+      RemainingQuantity -= NewInventoryItem.Quantity;
+    }
+  }
+}
+
 void USimpleInventoryComponent::RemoveItem(USimpleInventoryItem* Item) {
-  RemoveItemQuantity(Item, 1);
+  if (Item == nullptr) {
+    throw std::invalid_argument("Item is null");
+  }
+
+  for (auto i = 0; i < Items.Num(); ++i) {
+    if (Items[i].Item == Item) {
+      Items.RemoveAt(i);
+      return;
+    }
+  }
 }
 
 void USimpleInventoryComponent::RemoveItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
-  if (Item == nullptr || Quantity <= 0) return;
+  if (Item == nullptr || Quantity <= 0) {
+    throw std::invalid_argument("Item is null or quantity is less than or equal to 0");
+  }
 
-  for (int32 i = 0; i < Items.Num(); ++i) {
-    FInventoryItem& InventoryItem = Items[i];
-    
-    if (InventoryItem.Item == Item) {
-      InventoryItem.Quantity -= Quantity;
-      
-      if (InventoryItem.Quantity <= 0) {
-        Items.RemoveAt(i);
+  if (!Item->bStackable) {
+    throw std::invalid_argument("Item is not stackable");
+  }
+
+  int32 RemainingQuantity = Quantity;
+  TArray<int32> IndexesToRemove;
+
+  while (RemainingQuantity > 0) {
+    for (auto i = 0; i < Items.Num(); ++i) {
+      if (Items[i].Item == Item) {
+        const int32 QuantityToRemove = FMath::Min(RemainingQuantity, Items[i].Quantity);
+        Items[i].Quantity -= QuantityToRemove;
+        RemainingQuantity -= QuantityToRemove;
+
+        if (Items[i].Quantity == 0) {
+          IndexesToRemove.Add(i);
+        }
       }
-      
-      return;
     }
+  }
+
+  for (int32 i = IndexesToRemove.Num() - 1; i >= 0; --i) {
+    Items.RemoveAt(IndexesToRemove[i]);
   }
 }
 
@@ -86,20 +132,4 @@ int32 USimpleInventoryComponent::GetItemQuantity(USimpleInventoryItem* Item) con
   }
 
   return 0;
-}
-
-void USimpleInventoryComponent::SetItemQuantity(USimpleInventoryItem* Item, int32 Quantity) {
-  if (Item == nullptr || Quantity < 0) return;
-
-  for (FInventoryItem& InventoryItem: Items) {
-    if (InventoryItem.Item == Item) {
-      InventoryItem.Quantity = Quantity;
-      return;
-    }
-  }
-
-  FInventoryItem NewInventoryItem;
-  NewInventoryItem.Item = Item;
-  NewInventoryItem.Quantity = Quantity;
-  Items.Add(NewInventoryItem);
 }
